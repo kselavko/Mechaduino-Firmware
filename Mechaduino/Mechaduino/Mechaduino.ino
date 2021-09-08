@@ -10,31 +10,31 @@
 
   Many thanks to all contributors!
   --------------------------------------------------------------
-  
+
   Controlled via a SerialUSB terminal at 115200 baud.
 
   Implemented serial commands are:
 
- s  -  step
- d  -  dir
- p  -  print [step number] , [encoder reading]
+  s  -  step
+  d  -  dir
+  p  -  print [step number] , [encoder reading]
 
- c  -  calibration routine
- e  -  check encoder diagnositics
- q  -  parameter query
+  c  -  calibration routine
+  e  -  check encoder diagnositics
+  q  -  parameter query
 
- x  -  position mode
- v  -  velocity mode
- t  -  torque mode
+  x  -  position mode
+  v  -  velocity mode
+  t  -  torque mode
 
- y  -  enable control loop
- n  -  disable control loop
- r  -  enter new setpoint
+  y  -  enable control loop
+  n  -  disable control loop
+  r  -  enter new setpoint
 
- j  -  step response
- k  -  edit controller gains -- note, these edits are stored in volatile memory and will be reset if power is cycled
- g  -  generate sine commutation table
- m  -  print main menu
+  j  -  step response
+  k  -  edit controller gains -- note, these edits are stored in volatile memory and will be reset if power is cycled
+  g  -  generate sine commutation table
+  m  -  print main menu
 
 
   ...see serialCheck() in Utils for more details
@@ -52,31 +52,50 @@
 
 
 void setup()        // This code runs once at startup
-{                         
-   
-  digitalWrite(ledPin,HIGH);        // turn LED on 
+{
+
+  digitalWrite(ledPin, HIGH);       // turn LED on
   setupPins();                      // configure pins
   setupTCInterrupts();              // configure controller interrupt
 
-  SerialUSB.begin(115200);          
-  delay(3000);                      // This delay seems to make it easier to establish a connection when the Mechaduino is configured to start in closed loop mode.  
+  SerialUSB.begin(115200);
+  delay(3000);                      // This delay seems to make it easier to establish a connection when the Mechaduino is configured to start in closed loop mode.
   serialMenu();                     // Prints menu to serial monitor
   setupSPI();                       // Sets up SPI for communicating with encoder
-  digitalWrite(ledPin,LOW);         // turn LED off 
-  
+  digitalWrite(ledPin, LOW);        // turn LED off
+
   // spot check some of the lookup table to decide if it has been filled in
   if (lookup[0] == 0 && lookup[128] == 0 && lookup[1024] == 0)
     SerialUSB.println("WARNING: Lookup table is empty! Run calibration");
 
   // Uncomment the below lines as needed for your application.
   // Leave commented for initial calibration and tuning.
-  
+
   configureStepDir();           // Configures setpoint to be controlled by step/dir interface
   // configureEnablePin();         // Active low, for use wath RAMPS 1.4 or similar
-  enableTCInterrupts();         // uncomment this line to start in closed loop 
+  enableTCInterrupts();         // uncomment this line to start in closed loop
   mode = 'x';                   // start in position mode
-}
+
+delay(1); // Wait for u to be repopulated
+ // disableTCInterrupts(); // remove
+float old_u = 0.0;
+  while (abs(u) > 50 ) {
+    
+   
+    if(u > 50)
+    {r -= 1;
+    }
+    else if(u < -50)
+    {   
+      r += 1;}
+      delayMicroseconds(10); 
+
+  }
   
+
+
+}
+
 
 
 //////////////////////////////////////
@@ -86,7 +105,6 @@ void setup()        // This code runs once at startup
 
 void loop()                 // main loop
 {
-
   serialCheck();              //must have this execute in loop for serial commands to function
 
   //r=0.1125*step_count;      //Don't use this anymore. Step interrupts enabled above by "configureStepDir()", adjust step size ("stepangle")in parameters.cpp

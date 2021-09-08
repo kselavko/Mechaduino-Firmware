@@ -56,9 +56,9 @@ extern const int sin_1[];
 #define ledPin  13
 #define chipSelectPin A2 //output to chip select
 
-#define step_pin 1
-#define dir_pin 0
-#define enable_pin 2
+#define dir_pin 0 // Blue Strip
+#define step_pin 1 // Blue Solid
+#define enable_pin 2 // Green Stripe
 
 //for faster digitalWrite:
 #define IN_1_HIGH() (REG_PORT_OUTSET0 = PORT_PA06)
